@@ -3,7 +3,7 @@
 This repository is the implementation of [FedTMOS: Efficient One-Shot Federated Learning with Tsetlin Machine (ICLR'25)](https://openreview.net/forum?id=44hcrfzydU&referrer=%5BAuthor%20Console%5D(%2Fgroup%3Fid%3DICLR.cc%2F2025%2FConference%2FAuthors%23your-submissions))
 
 
-<img width="1530" alt="image" src="">
+<img width="1530" alt="image" src="src/iclrposter_shannon.pdf">
 
 
 ## Requirements
