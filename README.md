@@ -18,10 +18,22 @@ make
 
 ## Running the code:
 
-```
-python oneshotfedtmos.py --epochs 1 --dirichlet 2 --local_epochs 30  --n_clauses 200 --T 1000 --s 5 --patch_dim 5 --dataset 'F-MNIST'  --data_dir '/data/dir/' --num_models 1 --k 10 --num_clients 10 --c 3 --seed 20 --load_pretrain 0 --dir_type 'cls' 
+Examples:
 
-python oneshotfedtmos.py --epochs 1 --dirichlet 0.3 --local_epochs 30  --n_clauses 200 --T 1000 --s 5 --patch_dim 5 --dataset 'F-MNIST'  --data_dir '/data/dir/' --num_models 1 --k 30 --num_clients 10 --c 3 --seed 20 --load_pretrain 0 
+```
+
+
+python oneshotfedtmos.py --epochs 1 --dirichlet 3 --local_epochs 30 --n_clauses 100 --T 1000 --s 5 --patch_dim 10 --dataset 'MNIST'  --dir '/data/dir' --num_models 1 --k 10 --num_clients 10 --c 4 --seed 20 --load_pretrain 0 --dir_type 'cls' 
+
+python oneshotfedtmos.py --epochs 1 --dirichlet 4 --local_epochs 30  --n_clauses 200 --T 1000 --s 5 --patch_dim 5 --dataset 'F-MNIST'  --data_dir '/data/dir/' --num_models 1 --k 10 --num_clients 10 --c 3 --seed 20 --load_pretrain 0 --dir_type 'cls' 
+
+python oneshotfedtmos.py --epochs 1 --dirichlet 0.1 --local_epochs 30  --n_clauses 1100 --T 2000 --s 5 --patch_dim 5 --dataset 'SVHN'  --data_dir '/data/dir/' --num_models 1 --k 30 --num_clients 10 --c 3 --seed 20 --load_pretrain 0 --dir_type 'dir' 
+
+python oneshotfedtmos.py --epochs 1 --dirichlet 0.05 --local_epochs 30 --n_clauses 200 --T 20  --s 5 --dataset 'CIFAR-10'  --data_dir '/data/dir/' --num_models 3 --k 30 --num_clients 10 --c 3,3,1 --seed 20 --load_pretrain 0 --dir_type 'dir' 
+
+
+
+
 
 ```
 
@@ -43,6 +55,7 @@ Configurations:
 - `--n_clauses`: the number of clauses of the model
 - `--T`: the feedback threshold of the model
 - `--s`: the learning sensitivity of the model
+- `--patch_dim`: the patch dimensions of the model
 - `--c`: the number of server models
 - `--k`: the number of clusters
 
