@@ -37,6 +37,7 @@ def get_datasets(name, split='train', transform=None,
 }
 
     
+    
   
     if name == 'MNIST':
         dataset = datasets.MNIST(root=_dataset_path['MNIST'],
@@ -89,7 +90,7 @@ def get_datasets(name, split='train', transform=None,
        data_x_test= test_dataset.data
     
     elif 'ImageNet' in name:
-      dataset,test_dataset = load_tinyimagenet_data()
+      dataset,test_dataset = load_tinyimagenet_data(data_dir=_DATASETS_MAIN_PATH)
       data_x_train = dataset.data
       data_x_test= test_dataset.data
       data_y_test = np.array(test_dataset.targets,dtype=np.uint8)
@@ -372,7 +373,7 @@ def get_dataset_all(dataset_name, num_models, data_dir ):
 
   if "CIFAR" in dataset_name or "ImageNet" in dataset_name : 
     if dataset_name == 'ImageNet':
-      dataset,test_dataset = load_tinyimagenet_data()
+      dataset,test_dataset = load_tinyimagenet_data(data_dir= _DATASETS_MAIN_PATH)
       data_x_train = dataset.data
       data_x_test= test_dataset.data
       data_y_test = np.array(test_dataset.targets,dtype=np.uint8)
@@ -842,8 +843,9 @@ def make_client_data(dataset, all_traindata, all_testdata, numclients, num_model
 
 
 
-def load_tinyimagenet_data():
-    data_root = _dataset_path['ImageNet']
+def load_tinyimagenet_data(data_dir ='/data/'):
+  
+    data_root =   os.path.join(data_dir,'tiny-imagenet-200/')
     transform = transforms.Compose([
         transforms.Resize((32, 32)),  # Resize images to 32x32
         transforms.ToTensor()         # Convert images to tensors
