@@ -141,7 +141,7 @@ void mc_tm_predict(struct MultiClassTsetlinMachine *mc_tm, unsigned int *X, int 
 // The Tsetlin Machine can be trained incrementally, one training example at a time.
 // Use this method directly for online and incremental training.
 
-void mc_tm_update_chong(struct MultiClassTsetlinMachine *mc_tm, unsigned int *Xi, int target_class) // one vs all
+void mc_tm_update(struct MultiClassTsetlinMachine *mc_tm, unsigned int *Xi, int target_class) // one vs all
 //chong's code
 {
 	// Update the Tsetlin machine of the target class
