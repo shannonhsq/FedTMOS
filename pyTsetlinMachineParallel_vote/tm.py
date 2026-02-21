@@ -101,6 +101,13 @@ _lib.mc_tm_transform.argtypes = [mc_ctm_pointer, array_1d_uint, array_1d_uint, C
 _lib.mc_tm_clause_configuration.restype = None                    
 _lib.mc_tm_clause_configuration.argtypes = [mc_ctm_pointer, C.c_int, C.c_int, array_1d_uint] 
 
+_lib.mc_tm_votes.restype = None
+_lib.mc_tm_votes.argtypes = [mc_ctm_pointer, array_1d_uint, array_1d_uint,array_1d_int, array_1d_float,array_1d_float, C.c_int, C.c_float] 
+
+_lib.mc_tm_get_votes.restype = None
+_lib.mc_tm_get_votes.argtypes = [mc_ctm_pointer, array_1d_uint, array_1d_uint,array_1d_int, C.c_int] 
+
+
 # Tsetlin Machine
 
 _lib.CreateTsetlinMachine.restype = ctm_pointer                    
