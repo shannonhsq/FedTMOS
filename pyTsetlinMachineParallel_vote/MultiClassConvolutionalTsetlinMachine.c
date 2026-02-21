@@ -319,6 +319,65 @@ void mc_tm_transform(struct MultiClassTsetlinMachine *mc_tm, unsigned int *X,  u
 }
 
 
+void softmax_with_temperature(float *data,  int num_classes, float *probs, float temperature) {
+    // Calculate softmax numerator (scaled logits)
+    float max_logit = data[0];
+    for (int i = 1; i < num_classes; ++i) {
+        if (data[i] > max_logit) {
+            max_logit = data[i];
+        }
+    }
+
+    float exp_sum = 0.0;
+    for (int i = 0; i < num_classes; ++i) {
+        float scaled_logit = (data[i] - max_logit) / temperature;
+        float exp_logit = expf(scaled_logit);
+        probs[i] = exp_logit;
+        exp_sum += exp_logit;
+    }
+
+    // Calculate softmax probabilities
+    for (int i = 0; i < num_classes; ++i) {
+        probs[i] /= exp_sum;
+    }
+}
+
+
+void min_max_scaler(int *data, int num_classes, float *normalized_data, int T) {
+    // Find the minimum and maximum scores
+    int min_score = -T; //data[0];
+    int max_score = T; //data[0];
+    //for (int i = 1; i < num_classes; ++i) {
+     //   if (data[i] < min_score) {
+       //     min_score = data[i];
+        //}
+        //if (data[i] > max_score) {
+         //   max_score = data[i];
+       // }
+    //}
+    
+    // Apply Min-Max scaling
+    float range = max_score - min_score;
+    for (int i = 0; i < num_classes; ++i) {
+        normalized_data[i] = (data[i] - min_score) / range;
+		//normalized_data[i] = (data[i] ) / range;
+    }
+}
+
+void min_max_scaled_softmax(int *data, int num_classes, float *probs, float temperature, int T) {
+    // First, perform Min-Max scaling
+    float normalized_data[num_classes];
+    min_max_scaler(data, num_classes, normalized_data, T);
+    //linear_scaling(data, num_classes, normalized_data, T);
+    
+    // Then, apply softmax to the normalized data
+    //softmax(normalized_data, num_classes, probs, T );
+    softmax_with_temperature(normalized_data, num_classes, probs, temperature);
+}
+
+
+
+
 
 void mc_tm_get_votes(struct MultiClassTsetlinMachine *mc_tm, unsigned int *X, int *y, int *votes_array, int number_of_examples) {
 	
