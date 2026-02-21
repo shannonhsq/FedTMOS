@@ -249,6 +249,9 @@ class MultiClassConvolutionalTsetlinMachine2D():
 			all_c.append(temp_cc)
 
 		return Y, cc_Y, np.array(all_c), np.array(all_votes)
+
+
+	
 	def get_score(self,X):
 		all_votes = []
 		number_of_examples = X.shape[0]
