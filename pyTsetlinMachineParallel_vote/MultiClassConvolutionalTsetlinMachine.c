@@ -320,4 +320,174 @@ void mc_tm_transform(struct MultiClassTsetlinMachine *mc_tm, unsigned int *X,  u
 
 
 
+void mc_tm_get_votes(struct MultiClassTsetlinMachine *mc_tm, unsigned int *X, int *y, int *votes_array, int number_of_examples) {
+	
+	
+    unsigned int step_size = mc_tm->number_of_patches * mc_tm->number_of_ta_chunks;
+    int max_threads = omp_get_max_threads();
+    struct MultiClassTsetlinMachine **mc_tm_thread = (void *)malloc(sizeof(struct MultiClassTsetlinMachine *) * max_threads);
+    struct TsetlinMachine *tm = mc_tm->tsetlin_machines[0];
+   
+    
+
+	// Allocate memory for votes_array, which will hold the votes for each class for each example
+   // votes_array = (int**)malloc(mc_tm->number_of_classes * number_of_examples * sizeof(int*));
+	
+    for (int t = 0; t < max_threads; t++) {
+        mc_tm_thread[t] = CreateMultiClassTsetlinMachine(mc_tm->number_of_classes, tm->number_of_clauses, tm->number_of_features, tm->number_of_patches, tm->number_of_ta_chunks, tm->number_of_state_bits, tm->T, tm->s, tm->s_range, tm->boost_true_positive_feedback, tm->weighted_clauses);
+        for (int i = 0; i < mc_tm->number_of_classes; i++) {
+            free(mc_tm_thread[t]->tsetlin_machines[i]->ta_state);
+            mc_tm_thread[t]->tsetlin_machines[i]->ta_state = mc_tm->tsetlin_machines[i]->ta_state;
+            free(mc_tm_thread[t]->tsetlin_machines[i]->clause_weights);
+            mc_tm_thread[t]->tsetlin_machines[i]->clause_weights = mc_tm->tsetlin_machines[i]->clause_weights;
+        }
+    } 
+
+    #pragma omp parallel for
+    for (int l = 0; l < number_of_examples; l++) {
+        int thread_id = omp_get_thread_num();
+		
+	
+        int *arr_l_cc = (int *)malloc(sizeof(int) * mc_tm->number_of_classes);
+	
+        unsigned int pos = l * step_size;
+        // Identify class with largest output
+        int max_class_sum = tm_score(mc_tm_thread[thread_id]->tsetlin_machines[0], &X[pos]);
+        int max_class = 0;
+        arr_l_cc[0] = max_class_sum;
+		int index = l*mc_tm->number_of_classes;
+		votes_array[index] = max_class_sum;
+
+        for (int i = 1; i < mc_tm_thread[thread_id]->number_of_classes; i++) {
+            int class_sum = tm_score(mc_tm_thread[thread_id]->tsetlin_machines[i], &X[pos]);
+            arr_l_cc[i] = class_sum;
+			votes_array[index+i] = class_sum;
+		
+            if (max_class_sum < class_sum) {
+                max_class_sum = class_sum;
+                max_class = i;
+            }
+        }
+
+		
+        y[l] = max_class;
+		
+	
+
+		free(arr_l_cc);
+
+
+    }
+
+
+
+    for (int t = 0; t < max_threads; t++) {
+        for (int i = 0; i < mc_tm_thread[t]->number_of_classes; i++) {
+            struct TsetlinMachine *tm_thread = mc_tm_thread[t]->tsetlin_machines[i];
+            free(tm_thread->clause_output);
+            free(tm_thread->output_one_patches);
+            free(tm_thread->feedback_to_la);
+            free(tm_thread->feedback_to_clauses);
+            free(tm_thread);
+        }
+    }
+
+    free(mc_tm_thread);
+
+
+}
+
+
+void mc_tm_votes(struct MultiClassTsetlinMachine *mc_tm, unsigned int *X, int *y, int *votes_array,float *cc_all,float *cc_y, int number_of_examples, float temperature) {
+	
+	
+    unsigned int step_size = mc_tm->number_of_patches * mc_tm->number_of_ta_chunks;
+    int max_threads = omp_get_max_threads();
+    struct MultiClassTsetlinMachine **mc_tm_thread = (void *)malloc(sizeof(struct MultiClassTsetlinMachine *) * max_threads);
+    struct TsetlinMachine *tm = mc_tm->tsetlin_machines[0];
+    int T =  mc_tm->T; 
+    
+
+	// Allocate memory for votes_array, which will hold the votes for each class for each example
+   // votes_array = (int**)malloc(mc_tm->number_of_classes * number_of_examples * sizeof(int*));
+	
+    for (int t = 0; t < max_threads; t++) {
+        mc_tm_thread[t] = CreateMultiClassTsetlinMachine(mc_tm->number_of_classes, tm->number_of_clauses, tm->number_of_features, tm->number_of_patches, tm->number_of_ta_chunks, tm->number_of_state_bits, tm->T, tm->s, tm->s_range, tm->boost_true_positive_feedback, tm->weighted_clauses);
+        for (int i = 0; i < mc_tm->number_of_classes; i++) {
+            free(mc_tm_thread[t]->tsetlin_machines[i]->ta_state);
+            mc_tm_thread[t]->tsetlin_machines[i]->ta_state = mc_tm->tsetlin_machines[i]->ta_state;
+            free(mc_tm_thread[t]->tsetlin_machines[i]->clause_weights);
+            mc_tm_thread[t]->tsetlin_machines[i]->clause_weights = mc_tm->tsetlin_machines[i]->clause_weights;
+        }
+    } 
+
+    #pragma omp parallel for
+    for (int l = 0; l < number_of_examples; l++) {
+        int thread_id = omp_get_thread_num();
+		//votes_array[l] = (int*)malloc(mc_tm->number_of_classes * sizeof(int));
+	
+        int *arr_l_cc = (int *)malloc(sizeof(int) * mc_tm->number_of_classes);
+		float *probs= (float *)malloc(sizeof(float) * mc_tm->number_of_classes);
+	
+
+        unsigned int pos = l * step_size;
+        // Identify class with largest output
+        int max_class_sum = tm_score(mc_tm_thread[thread_id]->tsetlin_machines[0], &X[pos]);
+        int max_class = 0;
+        arr_l_cc[0] = max_class_sum;
+		int index = l*mc_tm->number_of_classes;
+		votes_array[index] = max_class_sum;
+
+        for (int i = 1; i < mc_tm_thread[thread_id]->number_of_classes; i++) {
+            int class_sum = tm_score(mc_tm_thread[thread_id]->tsetlin_machines[i], &X[pos]);
+            arr_l_cc[i] = class_sum;
+			votes_array[index+i] = class_sum;
+		
+            if (max_class_sum < class_sum) {
+                max_class_sum = class_sum;
+                max_class = i;
+            }
+        }
+
+		
+        y[l] = max_class;
+		min_max_scaled_softmax(arr_l_cc,  mc_tm->number_of_classes, probs, temperature, T);
+		for (int i = 0; i < mc_tm->number_of_classes; i++) {
+			cc_all[l*mc_tm->number_of_classes+i] = probs[i];
+		}
+		cc_y[l]=probs[max_class];
+		free(probs);
+		free(arr_l_cc);
+
+
+    }
+
+
+
+    for (int t = 0; t < max_threads; t++) {
+        for (int i = 0; i < mc_tm_thread[t]->number_of_classes; i++) {
+            struct TsetlinMachine *tm_thread = mc_tm_thread[t]->tsetlin_machines[i];
+            free(tm_thread->clause_output);
+            free(tm_thread->output_one_patches);
+            free(tm_thread->feedback_to_la);
+            free(tm_thread->feedback_to_clauses);
+            free(tm_thread);
+        }
+    }
+
+    free(mc_tm_thread);
+
+
+}
+	//return votes_array;
+
+
+
+
+
+
+
+
+
+
 
