@@ -24,7 +24,7 @@ class Client:
         all_conf = []
         for i in range(len(self.model)):
             
-            accY, all_cc = self.model[i].get_score(data_x[i]) 
+            accY, ccY, all_cc, all_votes = self.model[i].get_all_votes_cc(data_x[i], temperature = 1/self.numclasses) 
             all_conf.append(all_cc)
         for j in range(len(data_x)):
         
