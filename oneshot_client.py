@@ -23,7 +23,7 @@ class Client:
         votes = np.zeros((len(data_x[0]), self.numclasses), dtype= np.float32)
         all_conf = []
         for i in range(len(self.model)):
-            accY, ccY, all_cc, all_votes = self.model[i].get_all_votes_cc(data_x[i], temperature = 1/self.numclasses) 
+            accY, ccY, all_cc, all_votes = self.model[i].get_scores(data_x[i]) 
             all_conf.append(all_cc)
         for j in range(len(data_x)):
         
