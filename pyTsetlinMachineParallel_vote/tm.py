@@ -369,7 +369,13 @@ class MultiClassTsetlinMachine():
 		_lib.mc_tm_predict(self.mc_tm, self.encoded_X, Y, number_of_examples)
 
 		return Y
-	def confidence_scores(self, X, temperature):
+		
+
+
+	
+	def get_all_votes_cc(self, X, temperature):
+		all_votes = []
+		all_c = [] 
 		number_of_examples = X.shape[0]
 		
 		self.encoded_X = np.ascontiguousarray(np.empty(int(number_of_examples * self.number_of_patches * self.number_of_ta_chunks), dtype=np.uint32))
@@ -377,44 +383,28 @@ class MultiClassTsetlinMachine():
 		Xm = np.ascontiguousarray(X.flatten()).astype(np.uint32)
 
 		if self.append_negated:
-			_lib.tm_encode(Xm, self.encoded_X, number_of_examples, self.number_of_features//2, 1, 1, self.number_of_features//2, 1, 1)
+			_lib.tm_encode(Xm, self.encoded_X, number_of_examples, self.dim_x, self.dim_y, self.dim_z, self.patch_dim[0], self.patch_dim[1], 1)
 		else:
-			_lib.tm_encode(Xm, self.encoded_X, number_of_examples, self.number_of_features, 1, 1, self.number_of_features, 1, 0)
+			_lib.tm_encode(Xm, self.encoded_X, number_of_examples, self.dim_x, self.dim_y, self.dim_z, self.patch_dim[0], self.patch_dim[1], 0)
 	
 		Y = np.ascontiguousarray(np.zeros(number_of_examples, dtype=np.uint32))
 
+		cc_all = np.ascontiguousarray(np.zeros(number_of_examples* self.number_of_classes, dtype=np.float32))
 		cc_Y = np.ascontiguousarray(np.zeros(number_of_examples, dtype=np.float32))
-
 		
-		#cc_Y = np.ascontiguousarray([ np.zeros(self.number_of_classes, dtype=np.int32) for _ in range(number_of_examples)])
-
-		_lib.mc_tm_confidence_scores(self.mc_tm, self.encoded_X, Y, cc_Y, number_of_examples, temperature)
-
-
-		return cc_Y
+		votes_l = np.ascontiguousarray(np.zeros(number_of_examples* self.number_of_classes, dtype=np.int32))
 	
-	def confidence_entropy_scores(self, X, temperature):
-		number_of_examples = X.shape[0]
-		
-		self.encoded_X = np.ascontiguousarray(np.empty(int(number_of_examples * self.number_of_patches * self.number_of_ta_chunks), dtype=np.uint32))
+		_lib.mc_tm_votes(self.mc_ctm, self.encoded_X, Y,votes_l,cc_all, cc_Y, number_of_examples, temperature)
 
-		Xm = np.ascontiguousarray(X.flatten()).astype(np.uint32)
-		
-		if self.append_negated:
-			_lib.tm_encode(Xm, self.encoded_X, number_of_examples, self.number_of_features//2, 1, 1, self.number_of_features//2, 1, 1)
-		else:
-			_lib.tm_encode(Xm, self.encoded_X, number_of_examples, self.number_of_features, 1, 1, self.number_of_features, 1, 0)
-	
-		Y = np.ascontiguousarray(np.zeros(number_of_examples, dtype=np.uint32))
 
-		cc_Y = np.ascontiguousarray(np.zeros(number_of_examples, dtype=np.float32))
-		entropy_y = np.ascontiguousarray(np.zeros(number_of_examples, dtype=np.float32))
-		
-		#cc_Y = np.ascontiguousarray([ np.zeros(self.number_of_classes, dtype=np.int32) for _ in range(number_of_examples)])
+		for i in range(number_of_examples):
+			index = i * self.number_of_classes
+			temp = votes_l[index:index+self.number_of_classes]
+			temp_cc  = cc_all[index:index+self.number_of_classes]
+			all_votes.append(temp)
+			all_c.append(temp_cc)
 
-		_lib.mc_tm_confidence_entropy_scores(self.mc_tm, self.encoded_X, Y, cc_Y, entropy_y, number_of_examples, temperature)
-
-		return cc_Y, entropy_y
+		return Y, cc_Y, np.array(all_c), np.array(all_votes)
 
 	
 	
