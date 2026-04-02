@@ -1,6 +1,6 @@
 # FedTMOS: Efficient One-Shot Federated Learning with Tsetlin Machine
 
-This repository is the implementation of [FedTMOS: Efficient One-Shot Federated Learning with Tsetlin Machine (ICLR'25)](https://proceedings.iclr.cc/paper_files/paper/2025/hash/81e1cdaa570954321d8b06be386cc3d4-Abstract-Conference.html)
+This repository is the implementation of [FedTMOS: Efficient One-Shot Federated Learning with Tsetlin Machine (ICLR'25)](https://iclr.cc/virtual/2025/poster/31038)
 
 
 <img width="1530" alt="image" src="src/iclrposter_shannon.png">
